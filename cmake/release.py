@@ -46,11 +46,11 @@ def line_to_var(line):
 vars = check_output(['cmake', '-L', '-N', '-B', '.'], text=True).splitlines()
 vars = dict(map(line_to_var, vars))
 chromium_out = join(vars['CHROMIUM_SOURCE_TREE'], 'out', vars['CHROMIUM_PROFILE'])
-tok = environ.get('GITHUB_ACCESS_TOKEN')
+tok = environ.get('GITHUB_TOKEN')
 if tok:
     gh = GhApi()
 else:
-    print('GITHUB_ACCESS_TOKEN not set!', file=stderr)
+    print('GITHUB_TOKEN not set!', file=stderr)
     exit(2)
 build_target('package_browser')
 if not isdir(chromium_out):
@@ -64,17 +64,18 @@ if on_tag():
 else:
     print('Creating brand new release!')
     gh_rel = gh.repos.create_release(owner=GITHUB_ORG, repo=GITHUB_REPO, tag_name=version)
-artifact_extensions = ['.rpm', '.tar.gz', '.deb', '.dmg']
+artifact_extensions = ['.tar.gz', '.rpm', '.deb', '.dmg']
 
 
 def upload(contains):
     for f in listdir('.'):
         if contains not in f:
             continue
-        ext = splitext(f)[-1]
-        if ext in artifact_extensions:
-            print('Uploading', f, 'to', GITHUB_ORG, GITHUB_REPO, 'release', version)
-            gh.upload_file(gh_rel, f)
+        for ext in artifact_extensions:
+            if f.endswith(ext):
+                print('Uploading', f, 'to', GITHUB_ORG, GITHUB_REPO, 'release', version)
+                gh.upload_file(gh_rel, f)
+                break
 
 
 upload('client')
