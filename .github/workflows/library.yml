@@ -39,7 +39,7 @@ jobs:
       - name: UpDoc
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: build/library/doxy/html
+          folder: build/doc/html
   build:
     name: ${{ matrix.config.name }}
     needs: test
