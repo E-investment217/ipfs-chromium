@@ -1,6 +1,6 @@
 find_program(MARP_EXE NAMES "marp")
 if(MARP_EXE)
-  set(out "${CMAKE_BINARY_DIR}/doc/html/slides")
+  set(out "${CMAKE_BINARY_DIR}/doc/slides")
   file(MAKE_DIRECTORY "${out}")
   add_custom_target(gen_slides
 #    COMMAND "${MARP_EXE}" --pptx --allow-local-files --output "${out}" --input-dir "${CMAKE_SOURCE_DIR}/doc/slides/"

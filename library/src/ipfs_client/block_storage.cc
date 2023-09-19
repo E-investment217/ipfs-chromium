@@ -67,7 +67,7 @@ bool ipfs::BlockStorage::Store(std::string headers,
 bool ipfs::BlockStorage::Store(std::string const& cid,
                                std::string headers,
                                std::string body) {
-  VLOG(1) << "Store(cid=" << cid << " headers.size()=" << headers.size()
+  VLOG(2) << "Store(cid=" << cid << " headers.size()=" << headers.size()
           << " body.size()=" << body.size() << ')';
   DCHECK(headers != body);
   auto cid_res = Codec::fromString(cid);
