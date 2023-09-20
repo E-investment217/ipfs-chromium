@@ -1,6 +1,6 @@
 <!--
 theme: base-theme
-headingDivider: 2
+headingDivider: 3
 style: |
   section {
     background-color: #CDEFFF;
@@ -11,10 +11,13 @@ style: |
     margin-right: auto;
   }
   h1 {
-      text-align: center;
+    text-align: center;
   }
   h2 {
-      text-align: center;
+    text-align: center;
+  }
+  h3 {
+    text-align: left;
   }
 --> 
 
@@ -42,7 +45,7 @@ Relevant URL types:
 A Content ID (CID) is based on a hash, and therefore its content is immutable & verifiable.
 
 Example:
-### f015512206da6d67e9c8adc3752c8188c1adb52ee6fb1755816a8b1dc707b02a85a27ab09
+#### f015512206da6d67e9c8adc3752c8188c1adb52ee6fb1755816a8b1dc707b02a85a27ab09
 * f  - This string representation is base-16
 * 01 - Conforms to CID version 1
 * 55 - Codec of content (raw in this case) 
@@ -55,7 +58,7 @@ Example:
 Same format as CIDs, but refers to a public key.
 
 Example:
-### f0172002408011220e325f1b1b61029ac55c1dcd8a23949f53dc99131eaf424f341478eabc08233bc
+#### f0172002408011220e325f1b1b61029ac55c1dcd8a23949f53dc99131eaf424f341478eabc08233bc
 * 72 - Codec is "libp2p-key"
 * 00 - Hash type is "identity" (data itself here, not hashed)
 * 08011220e325f1b1b61029ac55c1dcd8a23949f53dc99131eaf424f341478eabc08233bc - Public key
@@ -85,16 +88,148 @@ Since all the content is verifiable, it can be pieced together from various/any 
   - The origin includes pubkey
   - Gateway provides the verifiable record, reducing to previous problem
 * DNSLink
-  - Origin includes a hostname
-  - Assume DNS is reliable
+  - Origin includes a hostname (Assume DNS TXT is reliable)
   - TXT record lookup reduces to earlier problem
 
-## Piecing together a DAG
+## Let's step through loading a page
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true });
+</script>
 
-//TODO: visualize
+### User enters URL
+ipns://k51qzi5uqu5dku8zqce3b7kmpcw6uua9w00b5boyaevowmzls2rpie0itokett/
+<div class="mermaid">
+flowchart LR;
+    ipns["/ipns/k51qzi5uqu5dku8zqce3b7kmpcw6uua9w00b5boyaevowmzls2rpie0itokett"]
+    style ipns fill:#f9f
+</div>
 
-## Previous measures
+### Request IPNS Record
+http://localhost:8080/ipns/k51qzi5uqu5dku8zqce3b7kmpcw6uua9w00b5boyaevowmzls2rpie0itokett?format=ipns-record
+Record points at a DNSLink!
+<div class="mermaid">
+flowchart LR;
+    ipns["/ipns/k51...ett"]-->dnsl["/ipns/ipfs.tech"]
+    style ipns fill:#f9f
+    style dnsl fill:#fa9
+</div> 
 
-* IPFS Companion
-* Brave
-* Hand-editing URLs to point to a given gateway
+### DNS TXT Record Lookup
+_dnslink.ipfs.tech has TXT "dnslink=/ipfs/QmRE3dyFsbhC1dAthPBvgo4w15dGwppCAybgmJDB5m2SRy"
+<div class="mermaid">
+flowchart LR;
+    ipns["/ipns/k51...ett"]-->dnsl["/ipns/ipfs.tech"]-->root["/ipfs/QmR...2SRy"]
+    style ipns fill:#f9f
+    style dnsl fill:#fa9
+</div>
+
+### We have our immutable content
+Request root block
+https://ipfs.io/ipfs/QmRE3dyFsbhC1dAthPBvgo4w15dGwppCAybgmJDB5m2SRy?format=raw
+<div class="mermaid">
+flowchart LR;
+    ipns["/ipns/k51...ett"]-->dnsl["/ipns/ipfs.tech"]-->root["/ipfs/QmR...2SRy"]
+    style ipns fill:#f9f
+    style dnsl fill:#fa9
+    root-->e1["..."]
+    root-->nuxt["_nuxt = QmYpxEzdbNbohung4gQoZFoQEzLNeBT8oGCQGPtKgjDbnT"]
+    root-->e3["..."]
+    root-->index["index.html = QmTzVjzGMG4LwBY9ArxcNcokPfbpG2biT8Gy9AiecxKtju"]
+    root-->e5["..."]
+    style root fill:#9fb
+</div>
+
+### It's a directory that contains index.html, so request that
+https://gateway.pinata.cloud/ipfs/QmTzVjzGMG4LwBY9ArxcNcokPfbpG2biT8Gy9AiecxKtju?format=raw
+<div class="mermaid">
+flowchart LR;
+    ipns["/ipns/k51...ett"]-->dnsl["/ipns/ipfs.tech"]-->root["/ipfs/QmR...2SRy"]
+    style ipns fill:#f9f
+    style dnsl fill:#fa9
+    root-->e1["..."]
+    root-->nuxt["_nuxt = QmYpxEzdbNbohung4gQoZFoQEzLNeBT8oGCQGPtKgjDbnT"]
+    root-->e3["..."]
+    root-->index["index.html = QmTzVjzGMG4LwBY9ArxcNcokPfbpG2biT8Gy9AiecxKtju"]
+    root-->e5["..."]
+    style root fill:#9fb
+    style index fill:#9fb
+</div>
+
+### index.html fits into a single node
+So just deserialize and return its content! 
+The HTML starts rendering, and requests a resource.
+`<img style="" class="max-w-40 mx-auto" src="/_nuxt/ipfs-logo.a313bcee.svg" data-v-6d12c5c1>`
+This is relative to the ipns root, so start over with a request for:
+`ipns://k51qzi5uqu5dku8zqce3b7kmpcw6uua9w00b5boyaevowmzls2rpie0itokett/_nuxt/ipfs-logo.a313bcee.svg`
+
+### Lots of stuff is in hot in cache. Requesting the entry _nuxt:
+https://ipfs.joaoleitao.org/QmYpxEzdbNbohung4gQoZFoQEzLNeBT8oGCQGPtKgjDbnT?format=raw
+<div class="mermaid">
+flowchart LR;
+    ipns["/ipns/k51...ett"]-->dnsl["/ipns/ipfs.tech"]-->root["/ipfs/QmR...2SRy"]
+    style ipns fill:#f9f
+    style dnsl fill:#fa9
+    root["/ipfs/QmR...SRy"]
+    root-->e1["..."]
+    root-->nuxt["_nuxt = QmY...bnT"]
+    root-->e3["..."]
+    root-->index["index.html = QmT...tju"]
+    root-->e5["..."]
+    style root fill:#9fb
+    style e4 fill:#9fb
+</div>
+
+### _nuxt is also a directory, with 164 entries
+Request the file we're after.
+https://ipfs.fleek.co/ipfs/QmWTW21hadJGoAcmGZC18mCFq71UUVGPtJSX5PeBubnQCQ?format=raw
+<div class="mermaid">
+flowchart LR;
+    ipns["/ipns/k51...ett"]-->dnsl["/ipns/ipfs.tech"]-->root["/ipfs/QmR...2SRy"]
+    style ipns fill:#f9f
+    style dnsl fill:#fa9
+    root["/ipfs/QmR...SRy"]
+    root-->e1["..."]
+    root-->nuxt["_nuxt = QmY...bnT"]
+    root-->e3["..."]
+    root-->index["index.html = QmT...tju"]
+    root-->e5["..."]
+    nuxt-->f0["..."]
+    nuxt-->img["ipfs-logo.a313bcee.svg = QmWTW21hadJGoAcmGZC18mCFq71UUVGPtJSX5PeBubnQCQ"]
+    nuxt-->f1["..."]
+    style root fill:#9fb
+    style index fill:#9fb
+    style nuxt fill:#9fb
+</div>
+
+### If this file were big
+Request the file parts in parallel
+https://gateway.ipfs.io/ipfs/Qm...1
+https://jcsl.hopto.org/ipfs/Qm...2
+<div class="mermaid">
+flowchart LR;
+    ipns["/ipns/k51...ett"]-->dnsl["/ipns/ipfs.tech"]-->root["/ipfs/QmR...2SRy"]
+    style ipns fill:#f9f
+    style dnsl fill:#fa9
+    root["/ipfs/QmR...SRy"]
+    root-->e1["..."]
+    root-->nuxt["_nuxt = QmY...bnT"]
+    root-->e3["..."]
+    root-->index["index.html = QmT...tju"]
+    root-->e5["..."]
+    nuxt-->f1["..."]
+    nuxt-->img["ipfs-logo.a313bcee.svg = QmWTW21hadJGoAcmGZC18mCFq71UUVGPtJSX5PeBubnQCQ"]
+    nuxt-->f2["..."]
+    style root fill:#9fb
+    style index fill:#9fb
+    style nuxt fill:#9fb
+    style img fill:#9fb
+    img-->c0["Qm...1"]
+    img-->c1["Qm...2"]
+</div>
+
+## And re-assemble
+File parts are in a tree in DFS order.
+
+![IPFS Logo](https://ipfs.tech/_nuxt/ipfs-logo.a313bcee.svg)
+

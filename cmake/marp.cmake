@@ -3,8 +3,6 @@ if(MARP_EXE)
   set(out "${CMAKE_BINARY_DIR}/doc/slides")
   file(MAKE_DIRECTORY "${out}")
   add_custom_target(gen_slides
-#    COMMAND "${MARP_EXE}" --pptx --allow-local-files --output "${out}" --input-dir "${CMAKE_SOURCE_DIR}/doc/slides/"
-#    COMMAND "${MARP_EXE}"        --allow-local-files --output "${out}" --input-dir "${CMAKE_SOURCE_DIR}/doc/slides/"
     COMMENT "Generated slides from doc/slides/*.md"
     DEPENDS ${doc_targets}
   )
@@ -17,8 +15,8 @@ if(MARP_EXE)
     get_filename_component(slide "${slide_md}" NAME_WE)
     add_custom_target(${slide}
       SOURCES "${slide_md}"
-      COMMAND "${MARP_EXE}" --pptx --allow-local-files "${slide_md}" --output "${out}/${slide}.pptx"
-      COMMAND "${MARP_EXE}"        --allow-local-files "${slide_md}" --output "${out}/${slide}.html"
+      COMMAND "${MARP_EXE}" --pptx --allow-local-files --html=true "${slide_md}" --output "${out}/${slide}.pptx"
+      COMMAND "${MARP_EXE}"        --allow-local-files --html=true "${slide_md}" --output "${out}/${slide}.html"
     )
     if(DOXYGEN_FOUND AND USE_DOXYGEN)
       add_custom_command(

@@ -147,7 +147,7 @@ bool Self::ProcessResponse(BusyGateway& gw,
     LOG(ERROR) << "No gateway.";
     return false;
   }
-  //  LOG(INFO) << "ProcessResponse(" << gw.url() << ')';
+  LOG(INFO) << "ProcessResponse(" << gw.url() << ')';
   if (!ldr) {
     LOG(ERROR) << "No loader for processing " << gw.url();
     return false;

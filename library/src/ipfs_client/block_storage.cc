@@ -88,6 +88,9 @@ auto ipfs::BlockStorage::GetInternal(std::string const& cid) -> Record const* {
   if (it == cid2record_.end()) {
     auto parsed = Codec::fromString(cid);
     if (parsed.has_value()) {
+      if (parsed.value().content_type == MultiCodec::LIBP2P_KEY) {
+        return nullptr;
+      }
       auto hash_type = parsed.value().content_address.getType();
       if (hash_type == libp2p::multi::HashType::identity) {
         LOG(INFO) << "Handling identity CID: " << cid;
