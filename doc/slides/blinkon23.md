@@ -9,6 +9,9 @@ style: |
   th {
     background-color: #CDEFFF;
   }
+  th:empty {
+    visibility: hidden;
+  }
   img {
     display: block;
     margin-left: auto;
@@ -27,7 +30,30 @@ style: |
 
 # Verifying IPFS Client in Chromium
 
-![IPFS Logo](https://ipfs.tech/_nuxt/ipfs-logo.a313bcee.svg)
+<table style="margin-left:auto;margin-right:auto;">
+<tr >
+<td colspan="2">
+
+![Chromium](chromium.png)
+</td><td colspan="2">
+
+![IPFS](ipfs.png) 
+</td></tr>
+
+<tr>
+<td>
+
+![LBL](lbl.jpg)
+</td><td>
+
+![arc](arc.png)
+</td><td>
+
+![FIL](fil.png)
+</td><td>
+
+![PL](pl.png)
+</tr></table>
 
 ## What is IPFS?
 
@@ -193,7 +219,7 @@ flowchart LR;
     root-->index["index.html = QmT...tju"]
     root-->e5["..."]
     style root fill:#9fb
-    style e4 fill:#9fb
+    style index fill:#9fb
 </div>
 
 ### _nuxt is also a directory, with 164 entries
@@ -266,7 +292,7 @@ e.g.:
 
 ## POC Screenshot
 
-![ScreenShot](/home/lbl/Pictures/icss.png)
+![ScreenShot](icss.png)
 
 ## Questions & Contact/Further reading
 
