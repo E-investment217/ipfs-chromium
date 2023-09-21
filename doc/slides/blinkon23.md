@@ -43,7 +43,7 @@ style: |
 <tr>
 <td>
 
-![LBL](lbl.jpg)
+![LBL](lbl.png)
 </td><td>
 
 ![arc](arc.png)

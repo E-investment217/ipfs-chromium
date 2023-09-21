@@ -29,7 +29,7 @@ if(MARP_EXE)
         TARGET "${slide}"
         POST_BUILD
         COMMAND cmake -E copy "${out}/${slide}.html" "${CMAKE_BINARY_DIR}/doc/html/md_doc_slides_${slide}.html"
-        COMMAND cmake -E copy "${out}/"* "${CMAKE_BINARY_DIR}/doc/html/"
+        COMMAND cmake -E copy ${out}/* "${CMAKE_BINARY_DIR}/doc/html/"
       )
     endif()
     add_dependencies(gen_slides "${slide}")
